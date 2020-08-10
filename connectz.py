@@ -1,4 +1,5 @@
 import sys
+from functools import lru_cache
 
 DIRECTIONS = ['horizontal', 'vertical', 'diagonal_clockwise', 'diagonal_anticlockwise']
 
@@ -9,7 +10,7 @@ class Column:
         self.index = index
 
     def __str__(self):
-        return f'Column {self.index + 1}'
+        return f'Column {self.index}'
 
 
 class Counter:
@@ -29,13 +30,9 @@ class Grid:
         self.width = int(width)
         self.height = int(height)
         self.win_streak = int(win_streak)
-        self.columns = []
+        self.columns = {}
         # initialise game as incomplete
         self.result = 3
-
-        for i in range(self.width):
-            # create space for counters to be organised into columns
-            self.columns.append(Column(i))
 
     def __str__(self):
         return f'Grid ({self.width}x{self.height}) win streak required: {self.win_streak}'
@@ -66,10 +63,13 @@ class Grid:
         :param counter: added instance of Counter
         :param column_number: column number to which counter should be added to in grid
         """
+        if column_number not in self.columns:
+            # only create column space as we need it
+            self.columns[column_number] = Column(column_number)
 
         self.result = self.validate_move(column_number)
         if self.result == 3:
-            column = self.columns[column_number - 1]
+            column = self.columns[column_number]
             column.counters.append(counter)
 
             # set vertical relationships between new counter and existing counters
@@ -78,12 +78,12 @@ class Grid:
                 column.counters[-2].vertical.append(counter)
 
             # horizontal& diagonal relationships
-            if column_number > 1:
-                prev_column = self.columns[column_number - 2]
+            if column_number > 1 and column_number - 1 in self.columns:
+                prev_column = self.columns[column_number - 1]
                 self.set_surrounding_relationships(column, prev_column, counter)
 
-            if column_number < self.width:
-                next_column = self.columns[column_number]
+            if column_number < self.width and column_number + 1 in self.columns:
+                next_column = self.columns[column_number + 1]
                 self.set_surrounding_relationships(column, next_column, counter)
 
             self.result = self.check_winning_streak(counter)
@@ -111,7 +111,7 @@ class Grid:
         if not 1 <= column_number <= self.width:
             # illegal column
             return 6
-        elif len(self.columns[column_number - 1].counters) == self.height:
+        elif len(self.columns[column_number].counters) == self.height:
             # illegal row
             return 5
         elif self.result == 1 or self.result == 2:
@@ -122,12 +122,13 @@ class Grid:
         """
         :return: if the grid is full or not
         """
-        for column in self.columns:
-            if len(column.counters) != self.height:
+        for column_number in self.columns:
+            if len(self.columns[column_number].counters) != self.height:
                 return False
         return True
 
 
+@lru_cache(maxsize=None)
 def count_direction_streak(current_counter, direction, prev_counter, streak=1):
     """
     Loop and recurse to count streak
@@ -140,7 +141,7 @@ def count_direction_streak(current_counter, direction, prev_counter, streak=1):
     if current_counter.player_no != prev_counter.player_no or not getattr(current_counter, direction):
         return 1
     for adjacent_counter in getattr(current_counter, direction):
-        if adjacent_counter != prev_counter:
+        if adjacent_counter != prev_counter and adjacent_counter.player_no == current_counter.player_no:
             streak = count_direction_streak(adjacent_counter, direction, current_counter, streak)
             return streak + 1
         return 1
@@ -207,10 +208,11 @@ def main():
                     sys.stdout.write(format_output(8))
                 result = play_connectz(i, meta_data[0], meta_data[1], meta_data[2])
                 sys.stdout.write(format_output(result))
-
+                count_direction_streak.cache_clear()
     except EnvironmentError:
         # cant open file
         sys.stdout.write(format_output(9))
+
     sys.exit()
 
 
