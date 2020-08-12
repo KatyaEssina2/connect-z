@@ -7,11 +7,8 @@ HEIGHT = 3
 STREAK = 3
 
 
-class TestConnectz(unittest.TestCase):
-    """
-    Test different variations of game moves and outcomes
-    """
-    # draw RETURN 0
+class TestDraw(unittest.TestCase):
+    """Test draw win RETURN 0"""
     def test_draw(self):
         """Verify that a full grid with no winning streak returns a draw"""
         game_moves = [1, 2, 3, 1, 3, 2, 1, 3, 2]
@@ -40,7 +37,9 @@ class TestConnectz(unittest.TestCase):
         result = play_connectz(game_moves, width, height, win_streak)
         self.assertEqual(result, 0)
 
-    # player 1 win RETURN 1
+
+class TestPlayer1Win(unittest.TestCase):
+    """Test player 1 win RETURN 1"""
     def test_p1_win_diagonal_edge(self):
         """Verify that Player 1 can win the game on a diagonal where the
          last counter entered is at the end of the streak"""
@@ -90,7 +89,9 @@ class TestConnectz(unittest.TestCase):
         result = play_connectz(game_moves[:-1], width, height, win_streak)
         self.assertEqual(result, 1)
 
-    # player 2 win RETURN 2
+
+class TestPlayer2Win(unittest.TestCase):
+    """Test player 2 win RETURN 2"""
     def test_p2_win_horizontal_edge(self):
         """Verify that Player 2 can win the game on a horizontal streak where the
          last counter entered is at the end of the streak"""
@@ -111,7 +112,9 @@ class TestConnectz(unittest.TestCase):
         result = play_connectz(game_moves, WIDTH, HEIGHT, STREAK)
         self.assertEqual(result, 2)
 
-    # incomplete game RETURN 3
+
+class TestIncompleteGame(unittest.TestCase):
+    """Test incomplete game RETURN 3"""
     def test_incomplete_basic(self):
         """Verify that a no win game, where the grid is not full results in an incomplete game"""
         game_moves = [1, 2, 3, 1]
@@ -124,7 +127,9 @@ class TestConnectz(unittest.TestCase):
         result = play_connectz(game_moves, WIDTH, HEIGHT, STREAK)
         self.assertEqual(result, 3)
 
-    # illegal continue RETURN 4
+
+class TestIllegalContinue(unittest.TestCase):
+    """Test illegal continue RETURN 4"""
     def test_illegal_continue_p1_win(self):
         """Verify that once Player 1 wins, a move by Player 2 results in an illegal continue"""
         game_moves = [1, 2, 1, 2, 1, 3]
@@ -137,7 +142,9 @@ class TestConnectz(unittest.TestCase):
         result = play_connectz(game_moves, WIDTH, HEIGHT, STREAK)
         self.assertEqual(result, 4)
 
-    # illegal row (overflow) RETURN 5
+
+class TestIllegalRow(unittest.TestCase):
+    """Test illegal row (overflow) RETURN 5"""
     def test_illegal_first_row(self):
         """Verify that if the number of moves into the first column exceeds the height of the grid
         the game results in an illegal row"""
@@ -152,7 +159,9 @@ class TestConnectz(unittest.TestCase):
         result = play_connectz(game_moves, WIDTH, HEIGHT, STREAK)
         self.assertEqual(result, 5)
 
-    # illegal column RETURN 6
+
+class TestIllegalColumn(unittest.TestCase):
+    """Test for illegal column RETURN 6"""
     def test_illegal_column_zero(self):
         """Verify that attempting to add a counter to column 0 is impossible and results in an illegal column"""
         game_moves = [0, 2, 3, 1]
@@ -166,7 +175,9 @@ class TestConnectz(unittest.TestCase):
         result = play_connectz(game_moves, WIDTH, HEIGHT, STREAK)
         self.assertEqual(result, 6)
 
-    # illegal game RETURN 7
+
+class TestIllegalGame(unittest.TestCase):
+    """Test for illegal game RETURN 7"""
     def test_illegal_game_too_short(self):
         """Verify that specifying a win streak that is greater than the height (and width) of the grid results
         in an illegal game"""
@@ -193,32 +204,32 @@ class TestInputs(unittest.TestCase):
     """
     # bad file data RETURN 8
     def test_empty_file(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/empty_file.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_cases/empty_file.txt'], capture_output=True)
         self.assertEqual(result.stdout.decode('ascii'), format_output(8))
 
     def test_non_ascii_first_row(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/non_ascii_first_row.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_cases/non_ascii_first_row.txt'], capture_output=True)
         self.assertEqual(result.stdout.decode('ascii'), format_output(8))
 
     def test_non_numeric_first(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/non_numeric_first.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_cases/non_numeric_first.txt'], capture_output=True)
         self.assertEqual(result.stdout.decode('ascii'), format_output(8))
 
     def test_not_enough_dims(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/not_enough_dims.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_cases/not_enough_dims.txt'], capture_output=True)
         self.assertEqual(result.stdout.decode('ascii'), format_output(8))
 
     def test_non_numeric_middle(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/non_numeric_middle.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_cases/non_numeric_middle.txt'], capture_output=True)
         self.assertEqual(result.stdout.decode('ascii'), format_output(8))
 
     def test_non_ascii_middle(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/non_ascii_middle_row.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_cases/non_ascii_middle_row.txt'], capture_output=True)
         self.assertEqual(result.stdout.decode('ascii'), format_output(8))
 
     # cant open file RETURN 9
     def test_wrong_file_path(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/this_file_doesnt_exist.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_cases/this_file_doesnt_exist.txt'], capture_output=True)
         self.assertEqual(result.stdout.decode('ascii'), format_output(9))
 
     # not the right number of arguments given
@@ -227,7 +238,7 @@ class TestInputs(unittest.TestCase):
         self.assertEqual(result.stderr.decode('ascii'), format_output('connectz.py: Provide one input file'))
 
     def test_cli_args_too_many(self):
-        result = subprocess.run(['python', 'connectz.py', './testcase/draw.txt', './testcase/player_2.txt'], capture_output=True)
+        result = subprocess.run(['python', 'connectz.py', './test_casess/draw.txt', './test_cases/player_2.txt'], capture_output=True)
         self.assertEqual(result.stderr.decode('ascii'), format_output('connectz.py: Provide one input file'))
 
 
