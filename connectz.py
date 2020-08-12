@@ -176,9 +176,12 @@ def play_connectz(game_moves, width, height, win_streak):
         return grid.result
     return 7
 
-
 def is_ascii(string):
-    return all(ord(c) < 128 for c in string)
+    try:
+        string.encode('ascii')
+        return True
+    except UnicodeEncodeError:
+        return False
 
 
 def format_output(result):
