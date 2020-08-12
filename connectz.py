@@ -14,7 +14,7 @@ class Column:
 
 
 class Counter:
-    def __init__(self, player_no):
+    def __init__(self, player_no, column):
         self.player_no = player_no
         self.horizontal = []
         self.vertical = []
@@ -138,13 +138,12 @@ def count_direction_streak(current_counter, direction, prev_counter, streak=1):
     :param streak: current streak
     :return: streak
     """
-    if current_counter.player_no != prev_counter.player_no or not getattr(current_counter, direction):
+    if not getattr(current_counter, direction):
         return 1
     for adjacent_counter in getattr(current_counter, direction):
         if adjacent_counter != prev_counter and adjacent_counter.player_no == current_counter.player_no:
-            streak = count_direction_streak(adjacent_counter, direction, current_counter, streak)
-            return streak + 1
-        return 1
+            streak = count_direction_streak(adjacent_counter, direction, current_counter, streak) + 1
+    return streak
 
 
 def is_valid_game(width, height, win_streak):
@@ -163,8 +162,8 @@ def play_connectz(game_moves, width, height, win_streak):
         for move in game_moves:
             if not valid_line(move):
                 return 8
-            column_number = int(move.strip())
-            grid.add_counter(Counter(player), column_number)
+            column_number = int(str(move).strip())
+            grid.add_counter(Counter(player, column_number), column_number)
 
             if 4 <= grid.result <= 8:
                 # game has reached an end point
@@ -175,6 +174,7 @@ def play_connectz(game_moves, width, height, win_streak):
 
         return grid.result
     return 7
+
 
 def is_ascii(string):
     try:
@@ -189,7 +189,7 @@ def format_output(result):
 
 
 def valid_line(line):
-    line = line.strip()
+    line = str(line).strip()
     if line and is_ascii(line) and all(c.isdigit() for c in line if c != ' '):
         return True
     return False
@@ -207,7 +207,7 @@ def main():
                 sys.stdout.write(format_output(8))
             else:
                 meta_data = meta_data_str.strip().split(' ')
-                if len(meta_data) < 3 or not is_ascii(meta_data_str):
+                if len(meta_data) < 3:
                     sys.stdout.write(format_output(8))
                 result = play_connectz(i, meta_data[0], meta_data[1], meta_data[2])
                 sys.stdout.write(format_output(result))
